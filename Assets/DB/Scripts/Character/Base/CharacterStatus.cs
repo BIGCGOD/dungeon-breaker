@@ -11,6 +11,11 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
+// Update()                 更新生命恢复等数值变动
+// ApplayDamage()           造成伤害，死亡判定，防御值计算，记录伤害方向
+// AddParticle()            添加击中效果
+// Dead()                   创建尸体，销毁对象
+// CopyTransformsRecurse()  复制位置，包括身体部件，添加身体部件飞出的效果
 
 public class CharacterStatus : MonoBehaviour
 {
@@ -30,56 +35,54 @@ public class CharacterStatus : MonoBehaviour
 	
 	private Vector3 velocityDamage;
 	float lastRegen;
+
 	void Update()
 	{
 		if(Time.time - lastRegen >= 1)
 		{
-			lastRegen	= Time.time;
-			HP	+= HPregen;
-			SP	+= SPregen;
+			lastRegen = Time.time;
+			HP += HPregen;
+			SP += SPregen;
 		}
 
 		if(HP > HPmax)
-			HP	= HPmax;	
+			HP = HPmax;
 
 		if(SP > SPmax)
-			SP	= SPmax;	
+			SP = SPmax;
 	}
-
+    
 	public int ApplayDamage(int damage,Vector3 dirdamge)
-	{	
-		// Applay Damage function
-		if(HP<0){
-			return 0;	
+	{
+        // Applay Damage function
+        if (HP < 0) {
+			return 0;
 		}
-		if(SoundHit.Length>0){
-			int randomindex = Random.Range(0,SoundHit.Length);
-			if(SoundHit[randomindex]!=null){
-				AudioSource.PlayClipAtPoint(SoundHit[randomindex],this.transform.position);	
+		if(SoundHit.Length > 0){
+			int randomindex = Random.Range(0, SoundHit.Length);
+			if(SoundHit[randomindex] != null){
+				AudioSource.PlayClipAtPoint(SoundHit[randomindex], this.transform.position);
 			}
 		}
 		if(this.gameObject.GetComponent<CharacterSystem>()){
 			this.gameObject.GetComponent<CharacterSystem>().GotHit(1);
 		}
 		var damval = damage - Defend;
-		if(damval<1){
-			damval = 1;	
+		if(damval < 1){
+			damval = 1;
 		}
 		HP -= damval;
 		velocityDamage = dirdamge;
-		if(HP<=0){
+		if(HP <= 0){
 			Dead();
 		}
 		return damval;
 	}
 	
-	
-	
-	
 	public void AddParticle(Vector3 pos){
 		if(ParticleObject){
-			var bloodeffect = (GameObject)Instantiate(ParticleObject,pos,transform.rotation);
-			GameObject.Destroy(bloodeffect,1);	
+			var bloodeffect = (GameObject)Instantiate(ParticleObject, pos, transform.rotation);
+			GameObject.Destroy(bloodeffect, 1);
 		}
 	}
 	
@@ -87,15 +90,12 @@ public class CharacterStatus : MonoBehaviour
 	{
 		if(DeadbodyModel)
 		{
-			var deadbody = (GameObject)Instantiate(DeadbodyModel,this.gameObject.transform.position,this.gameObject.transform.rotation);
-			CopyTransformsRecurse(this.gameObject.transform,deadbody.transform);
-			Destroy(deadbody,10.0f);
+			var deadbody = (GameObject)Instantiate(DeadbodyModel, this.gameObject.transform.position, this.gameObject.transform.rotation);
+			CopyTransformsRecurse(this.gameObject.transform, deadbody.transform);
+			Destroy(deadbody, 10.0f);
 		}
 		Destroy(gameObject);
 	}
-	
-	
-	
 	
 	public void CopyTransformsRecurse (Transform src,Transform dst)
 	{
@@ -107,12 +107,11 @@ public class CharacterStatus : MonoBehaviour
 		{
 			var curSrc = src.Find(child.name);
 			if(child.GetComponent<Rigidbody>())
-				child.GetComponent<Rigidbody>().AddForce(velocityDamage/3f);
+				child.GetComponent<Rigidbody>().AddForce(velocityDamage / 3f);
 
 			if(curSrc)
-				CopyTransformsRecurse(curSrc,child);
+				CopyTransformsRecurse(curSrc, child);
 		}
 	}
-
 }
 

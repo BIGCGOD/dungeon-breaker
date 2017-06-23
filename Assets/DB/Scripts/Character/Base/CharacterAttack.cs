@@ -9,9 +9,14 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
+// StartDamage()            清空命中列表，设置Activated
+// AddObjHitted()           添加命中对象
+// AddFloatingText()        显示伤害值
+// DoDamage()               伤害判定，计算伤害方向，显示伤害效果
+
 public class CharacterAttack : MonoBehaviour
 {
-	public float Direction = 0.5f;// Direction of object can hit 
+	public float Direction = 0.5f;// Direction of object can hit
 	public float Radius	= 1;
 	public int Force = 500;
 	public AudioClip[] SoundHit;
@@ -25,7 +30,6 @@ public class CharacterAttack : MonoBehaviour
 		Activated = false;
 	}
 	
-	
 	private void AddObjHitted(GameObject obj){
 		listObjHitted.Add(obj);
 	}
@@ -34,8 +38,7 @@ public class CharacterAttack : MonoBehaviour
 	{
 
 	}
-	
-	
+
 	public void AddFloatingText(Vector3 pos,string text){
 		// Adding Floating Text Effect
 		if(FloatingText){
@@ -43,17 +46,15 @@ public class CharacterAttack : MonoBehaviour
 			if(floattext.GetComponent<FloatingText>()){
 				floattext.GetComponent<FloatingText>().Text = text;
 			}
-			GameObject.Destroy(floattext,1);	
+			GameObject.Destroy(floattext,1);
 		}
 	}
-	
-	
 	
 	public void DoDamage()
 	{
 		Activated = true;
-	    var explosionPos	= transform.position;
-	    var colliders	= Physics.OverlapSphere(explosionPos,Radius);
+	    var explosionPos = transform.position;
+	    var colliders = Physics.OverlapSphere(explosionPos, Radius);
 		foreach(var hit in colliders)
 		{
 	        if (!hit || hit.gameObject == this.gameObject || hit.gameObject.tag == this.gameObject.tag)
@@ -75,19 +76,19 @@ public class CharacterAttack : MonoBehaviour
 			if(hit.gameObject.GetComponent<CharacterStatus>())
 			{
 				if(SoundHit.Length>0){
-					int randomindex = Random.Range(0,SoundHit.Length);
-					if(SoundHit[randomindex]!=null){
-						AudioSource.PlayClipAtPoint(SoundHit[randomindex],this.transform.position);	
-					}	
+					int randomindex = Random.Range(0, SoundHit.Length);
+					if(SoundHit[randomindex] != null){
+						AudioSource.PlayClipAtPoint(SoundHit[randomindex], this.transform.position);
+					}
 				}
 				
 				int damage = this.gameObject.GetComponent<CharacterStatus>().Damage;
-				int damageCal = (int)Random.Range(damage/2.0f,damage)+1;
+				int damageCal = (int)Random.Range(damage/2.0f, damage)+1;
 				var status	= hit.gameObject.GetComponent<CharacterStatus>();
-				int takedamage = status.ApplayDamage(damageCal,dirforce);
+				int takedamage = status.ApplayDamage(damageCal, dirforce);
 
 				// Add Particle Effect
-				AddFloatingText(hit.transform.position + Vector3.up,takedamage.ToString());
+				AddFloatingText(hit.transform.position + Vector3.up, takedamage.ToString());
 				status.AddParticle(hit.transform.position + Vector3.up);
 			}
 			if(hit.GetComponent<Rigidbody>()){
@@ -99,4 +100,3 @@ public class CharacterAttack : MonoBehaviour
     	}
 	}
 }
-

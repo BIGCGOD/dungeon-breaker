@@ -9,7 +9,6 @@ using System.Collections;
 
 public class HeroDie : MonoBehaviour
 {
-
 	void OnDestroy()
 	{
 		var gameManager	= (GameManager)FindObjectOfType(typeof(GameManager));

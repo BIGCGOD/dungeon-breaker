@@ -16,7 +16,7 @@ public class PotionPickup : MonoBehaviour {
 		
 		if(other.tag == "Player"){
        		if(other.gameObject.GetComponent<CharacterStatus>()){
-				other.gameObject.GetComponent<CharacterStatus>().HP+= 20;
+                other.gameObject.GetComponent<CharacterStatus>().HP += 20;
 				if(ParticlePotion){
 					GameObject.Instantiate(ParticlePotion,this.transform.position,Quaternion.identity);
 				}

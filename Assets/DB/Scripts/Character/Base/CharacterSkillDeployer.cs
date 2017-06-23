@@ -6,6 +6,11 @@
 using UnityEngine;
 using System.Collections;
 
+// 使用的攻击动作的抬手系统
+// DeploySkill(int)                 设置技能
+// DeploySkill()                    创建技能对象，计算sp值
+// DeployWithAttacking(int)         部署并释放技能
+// DeployWithAttacking()            释放技能
 
 public class CharacterSkillDeployer : MonoBehaviour {
 
@@ -20,21 +25,20 @@ public class CharacterSkillDeployer : MonoBehaviour {
 	void Start()
 	{
 		if(this.gameObject.GetComponent<CharacterStatus>()){
-			character = this.gameObject.GetComponent<CharacterStatus>();
+            character = this.gameObject.GetComponent<CharacterStatus>();
 		}
 		if(this.gameObject.GetComponent<CharacterAttack>()){
-			characterAttack = this.gameObject.GetComponent<CharacterAttack>();
-		}	
+            characterAttack = this.gameObject.GetComponent<CharacterAttack>();
+		}
 	}
 
 	public int indexSkill;// Current skill index
+
 	public void DeploySkill(int index)
 	{
-		indexSkill = index;
+        indexSkill = index;
 		DeploySkill();
 	}
-	
-	
 	
 	public void DeploySkill()
 	{
@@ -43,32 +47,30 @@ public class CharacterSkillDeployer : MonoBehaviour {
 		{
 			if(character != null && character.SP >= ManaCost[indexSkill])
 			{
-				var skill = (GameObject)GameObject.Instantiate(Skill[indexSkill],this.transform.position,this.transform.rotation);
-				skill.transform.forward	= this.transform.forward;
-				character.SP	-= ManaCost[indexSkill];
+                var skill = (GameObject)GameObject.Instantiate(Skill[indexSkill], this.transform.position, this.transform.rotation);
+                skill.transform.forward = this.transform.forward;
+                character.SP -= ManaCost[indexSkill];
 			}
 		}
 	}
 	
-	
 	public void DeployWithAttacking(int index){
-		indexSkill = index;
-		attackingSkill = true;
+        indexSkill = index;
+        attackingSkill = true;
 	}
 	
 	public void DeployWithAttacking(){
-		attackingSkill = true;
+        attackingSkill = true;
 	}
 	
-
 	void Update()
 	{
 		if(attackingSkill && characterAttack.Activated)
 		{
-			DeploySkill();
+            DeploySkill();
 
-			attackingSkill = false;
-			characterAttack.Activated = false;
+            attackingSkill = false;
+            characterAttack.Activated = false;
 		}
 	}
 }

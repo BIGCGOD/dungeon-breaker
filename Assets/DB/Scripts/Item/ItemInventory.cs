@@ -16,11 +16,9 @@ public class ItemInventory : MonoBehaviour
 	public AudioClip[] SoundHit; // Soung when hit
 	public float SpeedAttack = 1; // Attack Speed
 
-	
 	void Start () {
 	
 	}
-	
 	
 	void Update () {
 	

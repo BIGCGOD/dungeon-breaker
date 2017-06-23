@@ -6,6 +6,7 @@
 using UnityEngine;
 using System.Collections;
 
+// ×·×Ùµ¯
 
 public class MoverMissile : MonoBehaviour
 {
@@ -25,7 +26,6 @@ public class MoverMissile : MonoBehaviour
 	private int timetorock;
 	private bool locked;
     
-
     private void Start()
     {
         Destroy(gameObject, LifeTime);
@@ -33,7 +33,7 @@ public class MoverMissile : MonoBehaviour
 
     private void Update()
     {
-		// Find a closed target and follow
+        // Find a closed target and follow
         if (Seeker)
         {
             if (timetorock > DurationLock)
@@ -44,14 +44,14 @@ public class MoverMissile : MonoBehaviour
                     if (GameObject.FindGameObjectsWithTag(TargetTag).Length > 0)
                     {
                         var objs = GameObject.FindGameObjectsWithTag(TargetTag);
-						foreach(var obj in objs)
+                        foreach (var obj in objs)
                         {
-                            if(obj)
+                            if (obj)
                             {
-                                float dis = Vector3.Distance(obj.transform.position,gameObject.transform.position);
-                                if(distanceLock > dis)
+                                float dis = Vector3.Distance(obj.transform.position, gameObject.transform.position);
+                                if (distanceLock > dis)
                                 {
-                                    if(distance > dis)
+                                    if (distance > dis)
                                     {
                                         distance = dis;
                                         target = obj;
@@ -72,11 +72,11 @@ public class MoverMissile : MonoBehaviour
             {
                 damping += 0.9f;
                 Quaternion rotation = Quaternion.LookRotation(target.transform.position - transform.transform.position);
-                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime*damping);
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * damping);
                 Vector3 dir = (target.transform.position - transform.position).normalized;
                 float direction = Vector3.Dot(dir, transform.forward);
                 if (direction < targetlockdirection)
-                {
+                {`
                     target = null;
                 }
             }
@@ -85,14 +85,13 @@ public class MoverMissile : MonoBehaviour
                 locked = false;
             }
         }
-		
-		Speed	+= SpeedMult;
-		if(Speed > SpeedMax)
-			Speed	= SpeedMax;
 
-		GetComponent<Rigidbody>().velocity	= Speed * Time.deltaTime * gameObject.transform.forward;
-        GetComponent<Rigidbody>().velocity	+= new Vector3(Random.Range(-Noise.x, Noise.x),Random.Range(-Noise.y, Noise.y),
+        Speed += SpeedMult;
+        if (Speed > SpeedMax)
+            Speed = SpeedMax;
+
+        GetComponent<Rigidbody>().velocity = Speed * Time.deltaTime * gameObject.transform.forward;
+        GetComponent<Rigidbody>().velocity += new Vector3(Random.Range(-Noise.x, Noise.x), Random.Range(-Noise.y, Noise.y),
                                           Random.Range(-Noise.z, Noise.z));
-
     }
 }

@@ -6,6 +6,8 @@
 using UnityEngine;
 using System.Collections;
 
+// มัตุรอป๗
+
 public class ShockWaveSkill : MonoBehaviour
 {
 	public GameObject Skill;
