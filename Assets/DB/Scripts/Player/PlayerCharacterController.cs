@@ -15,7 +15,7 @@ public class PlayerCharacterController : MonoBehaviour
 	{
         character = gameObject.GetComponent<CharacterSystem>();
 
-        Screen.lockCursor = true;
+        Cursor.lockState = CursorLockMode.Locked;
 	}
 	
 	void Update()
@@ -23,7 +23,7 @@ public class PlayerCharacterController : MonoBehaviour
         var direction = Vector3.zero;
         var forward = Quaternion.AngleAxis(-90, Vector3.up) * Camera.main.transform.right;
 		
-		if(Screen.lockCursor)
+		if (Cursor.lockState == CursorLockMode.Locked)
 		{
             if (Input.GetKey(KeyCode.W))
                 direction += forward;
@@ -56,7 +56,6 @@ public class PlayerCharacterController : MonoBehaviour
                     skillDeployer.DeployWithAttacking();
             }
 		}
-
         direction.Normalize();
         character.Move(direction);
 	}

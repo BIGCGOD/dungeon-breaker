@@ -14,8 +14,8 @@ using System.Collections.Generic;
 // EquipItem()                  获取装备信息，创建游戏对象
 // UnEquipItem()                删除目标装备
 // UseItem()                    创建物体并减少库存
-// CheckEquiped()               检查已装备物品
-// Update()                     统计装备数值
+// CheckEquiped()               检查是否已装备物品
+// Update()                     统计装备数值！！
 
 public class CharacterInventory : MonoBehaviour
 {
@@ -26,13 +26,11 @@ public class CharacterInventory : MonoBehaviour
 	public ItemManager itemManager;// Item data base
 	private CharacterStatus character;
 	private CharacterAttack characterAttack;
-	private CharacterSystem characterSystem;
 
 	void Start ()
 	{
 		character = this.gameObject.GetComponent<CharacterStatus>();
 		characterAttack	= this.gameObject.GetComponent<CharacterAttack>();
-		characterSystem	= this.gameObject.GetComponent<CharacterSystem>();
 
 		itemManager = (ItemManager)FindObjectOfType(typeof(ItemManager));
 		ItemsEquiped = new ItemSlot[ItemEmbedSlot.Length];
@@ -163,17 +161,17 @@ public class CharacterInventory : MonoBehaviour
 		
 		if(character)
 		{
-			character.Damage = damage;
-			character.Defend = defend;
-		}
+			character.EquipmentDamage = damage + character.OriginalDamage;
+			character.EquipmentDefend = defend + character.OriginalDefend;
+        }
 		
 		// ItemsEquiped[0] is a Right hand weapon
 		if(itemManager != null && ItemsEquiped[0] != null)
 		{
 			var index = ItemsEquiped[0].Index;
 			var inventory = itemManager.Items[index].ItemPrefab.GetComponent<ItemInventory>();
-			if(characterSystem)
-				characterSystem.SpeedAttack = inventory.SpeedAttack;
+			if(characterAttack)
+                characterAttack.SpeedAttack = inventory.SpeedAttack;
 			
 			if(characterAttack)
 				characterAttack.SoundHit = inventory.SoundHit;

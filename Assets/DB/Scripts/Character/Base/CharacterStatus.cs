@@ -21,24 +21,73 @@ public class CharacterStatus : MonoBehaviour
 {
 	public GameObject DeadbodyModel;
 	public GameObject ParticleObject;
-	
-	public string Name = "";
+
+    //Current Status
+    public string Name = "";
 	public int HP = 10;
 	public int SP = 10;
-	public int SPmax = 10;
-	public int HPmax = 10;
-	public int Damage = 1;
-	public int Defend = 1;
-	public int HPregen = 1;
-	public int SPregen = 1;
-	public AudioClip[] SoundHit;
+    public int SPmax = 10;
+    public int HPmax = 10;
+    public int Damage = 1;
+    public int Defend = 1;
+    public int HPregen = 1;
+    public int SPregen = 1;
+
+    //Equipment Status
+    public int EquipmentSPmax = 10;
+    public int EquipmentHPmax = 10;
+    public int EquipmentDamage = 1;
+    public int EquipmentDefend = 1;
+    public int EquipmentHPregen = 1;
+    public int EquipmentSPregen = 1;
+
+    //Original Status
+    public int OriginalSPmax = 10;
+    public int OriginalHPmax = 10;
+    public int OriginalDamage = 1;
+    public int OriginalDefend = 1;
+    public int OriginalHPregen = 1;
+    public int OriginalSPregen = 1;
+
+    public AudioClip[] SoundHit;
 	
 	private Vector3 velocityDamage;
 	float lastRegen;
 
-	void Update()
-	{
-		if(Time.time - lastRegen >= 1)
+    //BUFF Delegate and Event
+    public delegate int BuffDelegate(int num);
+
+    public event BuffDelegate SPmaxBuffEvent;
+    public event BuffDelegate HPmaxBuffEvent;
+    public event BuffDelegate DamageBuffEvent;
+    public event BuffDelegate DefendBuffEvent;
+    public event BuffDelegate HPregenBuffEvent;
+    public event BuffDelegate SPregenBuffEvent;
+    
+    int CountBuffNum(BuffDelegate buffChange, int num)
+    {
+        if (buffChange != null)
+        {
+            System.Delegate[] delArray = buffChange.GetInvocationList();
+            foreach (System.Delegate del in delArray)
+            {
+                BuffDelegate method = (BuffDelegate)del;
+                num = method(num);
+            }
+        }
+        return num;
+    }
+
+    void Start()
+    {
+        gameObject.AddComponent<BaseBuff>();
+    }
+
+    void Update()
+    {
+        updateBuffData();
+
+        if (Time.time - lastRegen >= 1)
 		{
 			lastRegen = Time.time;
 			HP += HPregen;
@@ -51,8 +100,18 @@ public class CharacterStatus : MonoBehaviour
 		if(SP > SPmax)
 			SP = SPmax;
 	}
-    
-	public int ApplayDamage(int damage,Vector3 dirdamge)
+
+    public void updateBuffData()
+    {
+        SPmax = CountBuffNum(SPmaxBuffEvent, EquipmentSPmax);
+        HPmax = CountBuffNum(HPmaxBuffEvent, EquipmentHPmax);
+        Damage = CountBuffNum(DamageBuffEvent, EquipmentDamage);
+        Defend = CountBuffNum(DefendBuffEvent, EquipmentDefend);
+        HPregen = CountBuffNum(HPregenBuffEvent, EquipmentHPregen);
+        SPregen = CountBuffNum(SPregenBuffEvent, EquipmentSPregen);
+    }
+
+    public int ApplayDamage(int damage,Vector3 dirdamge)
 	{
         // Applay Damage function
         if (HP < 0) {

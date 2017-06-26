@@ -6,7 +6,7 @@
 using UnityEngine;
 using System.Collections;
 
-// 使用的攻击动作的抬手系统
+// 使用的攻击动作的抬手系统，等待修改(施法动作，动作延迟还是即刻抬手)
 // DeploySkill(int)                 设置技能
 // DeploySkill()                    创建技能对象，计算sp值
 // DeployWithAttacking(int)         部署并释放技能
@@ -14,13 +14,20 @@ using System.Collections;
 
 public class CharacterSkillDeployer : MonoBehaviour {
 
-	public GameObject[] Skill;//List of Launch object
-	public int[] ManaCost;// List of Mana cost
+    //******** skill message ********//
+    public GameObject[] Skill;// List of Launch object
+    public string[] PoseSkillName;// List of Skill pose animation
+    public float[] PoseASkillTime;// list of time damage marking using to sync with skill animation
+    public bool[] isCurrent;// wait other animation or play immediate
+    public float[] SpeedSkill;// Skill speed
+    public int[] ManaCost;// List of Mana cost
 	public Texture2D[] SkillIcon;// List of Skill image
+    //****************************//
 	
 	private CharacterStatus character;
 	private CharacterAttack characterAttack;
 	private bool attackingSkill;
+    private int currentSkill;
 	
 	void Start()
 	{

@@ -3,6 +3,8 @@ using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
 
+public delegate void Action();
+
 [RequireComponent(typeof(CharacterMotor))]
 [RequireComponent(typeof(CharacterStatus))]
 [RequireComponent(typeof(CharacterAttack))]
@@ -20,103 +22,79 @@ using System.Collections.Generic;
 
 public class CharacterSystem : MonoBehaviour
 {
-	public float Speed	= 2; // Move speed
-	public float SpeedAttack = 1.5f; // Attack speed
+
+    public float Speed	= 2; // Move speed
 	public float TurnSpeed	= 5; // turning speed
 
-	public float[] PoseAttackTime;// list of time damage marking using to sync with attack animation
-	public string[] PoseAttackNames;// list of attack animation
-	public string[] ComboAttackLists;// list of combo set
-	
-	public string[] PoseHitNames;// pose animation when character got hit
-	public int WeaponType; // type of attacking
+    public float PoseSpeed;
+    public float PoseTime;
+    public string PoseName;
+    public Action doSomething;
+    public Action doWhenStop;
+
+    public string[] PoseHitNames;// pose animation when character got hit
 	public string PoseIdle = "Idle";
 	public string PoseRun = "Run";
 	public bool IsHero;
-	
-	//private variable
-	private bool diddamaged;
-	private int attackStep = 0;
-	private string[] comboList;
-	private int attackStack;
-	private float attackStackTimeTemp;
-	private float frozetime;
-	private bool hited;
-	private bool attacking;
-	
-	CharacterMotor motor;
-	
-	void Start()
+
+    //private variable
+    public float frozetime;
+    public enum STATUS { NORMAL, ATTACKPREPARE, ATTACKING, SKILLPREPARE, SKILLING, NOTMOVE, HITED };
+    public STATUS status;
+
+    CharacterMotor motor;
+    CharacterAttack attack;
+
+    void Start()
 	{
 		motor = gameObject.GetComponent<CharacterMotor>();
-		// Play pose Idle first
-		gameObject.GetComponent<Animation>().CrossFade(PoseIdle);
-		attacking = false;
-	}
-    
-	void Update()
-	{
-		// Animation combo system
-		
-		if(ComboAttackLists.Length<=0){// if have no combo list
-			return;
-		}
+        attack = gameObject.GetComponent<CharacterAttack>();
+        // Play pose Idle first
+        gameObject.GetComponent<Animation>().CrossFade(PoseIdle);
 
-		comboList = ComboAttackLists[WeaponType].Split(","[0]);// Get list of animation index from combolists split by WeaponType
-		
-		if(comboList.Length > attackStep){
-			int poseIndex = int.Parse(comboList[attackStep]);// Read index of current animation from combo array
-			if(poseIndex < PoseAttackNames.Length){
-				// checking index of PoseAttackNames list
-				
-				AnimationState attackState = this.gameObject.GetComponent<Animation>()[PoseAttackNames[poseIndex]]; // get animation PoseAttackNames[poseIndex]
-				attackState.layer = 2;
-    			attackState.blendMode = AnimationBlendMode.Blend;
-				attackState.speed = SpeedAttack;
+        status = STATUS.NORMAL;
+    }
 
-                // set attacking to True when time of attack animation is running to 10% of animation
-                if (attackState.time >= attackState.length * 0.1f){
-		  			attacking = true;
-	  			}
-                // if the time of attack animation is running to marking point (PoseAttackTime[poseIndex]) 
-                // calling CharacterAttack.cs to push a damage out
-                if (attackState.time >= PoseAttackTime[poseIndex]){
-	      			if(!diddamaged){
-						// push a damage out
-		 				this.gameObject.GetComponent<CharacterAttack>().DoDamage();
-		 	 		}
-				}
-                // if the time of attack animation is running to 80% of animation. It's should be Finish this pose.
-                if (attackState.time >= attackState.length * 0.8f){
-					attackState.normalizedTime = attackState.length;
-					diddamaged = true;
-					attacking = false;
-					attackStep += 1;
-                    attackStack -= 1;
+    void Update()
+    {
+        // Animation combo system
+        if (status == STATUS.ATTACKPREPARE || status == STATUS.ATTACKING ||
+            status == STATUS.SKILLPREPARE || status == STATUS.SKILLING)
+        {
+            // checking index of PoseAttackNames list
 
-                    // checking if a calling attacking is stacked
-                    if (attackStack >= 1){
-						fightAnimation();
-					}
+            AnimationState attackState = this.gameObject.GetComponent<Animation>()[PoseName]; // get animation PoseAttackNames[poseIndex]
+            attackState.layer = 2;
+            attackState.blendMode = AnimationBlendMode.Blend;
+            attackState.speed = PoseSpeed;
 
-					// reset character damage system
-					this.gameObject.GetComponent<CharacterAttack>().StartDamage();
-	  			}
-			}
-		}
-
+            // set attacking to True when time of attack animation is running to 10% of animation
+            if (attackState.time >= attackState.length * 0.1f)
+            {
+                status = status == STATUS.ATTACKPREPARE ? STATUS.ATTACKING : STATUS.SKILLING;
+            }
+            // if the time of attack animation is running to marking point (PoseAttackTime[poseIndex]) 
+            // calling CharacterAttack.cs to push a damage out
+            if (attackState.time >= PoseTime)
+            {
+                doSomething();
+            }
+            // if the time of attack animation is running to 80% of animation. It's should be Finish this pose.
+            if (attackState.time >= attackState.length * 0.8f)
+            {
+                attackState.normalizedTime = attackState.length;
+                status = STATUS.NORMAL;
+                doWhenStop();
+            }
+        }
         // Freeze when got hit
-        if (hited){
+        if (status == STATUS.HITED){
 			if(frozetime > 0){
 				frozetime--;
 			}else{
-				hited = false;
+                status = STATUS.NORMAL;
 				this.gameObject.GetComponent<Animation>().Play(PoseIdle);
 			}
-		}
-		
-		if(Time.time > attackStackTimeTemp + 2 && attackStack < 1){
-			resetCombo();
 		}
 	}
 	
@@ -127,46 +105,27 @@ public class CharacterSystem : MonoBehaviour
 				this.gameObject.GetComponent<Animation>().Play(PoseHitNames[Random.Range(0,PoseHitNames.Length)], PlayMode.StopAll);
 			}
 			frozetime = time * Time.deltaTime;// froze time when got hit
-			hited = true;
-		}
-	}
-	
-	private void resetCombo(){
-		attackStep = 0;
-		attackStack = 0;
-	}
-	
-	private void fightAnimation(){
-		attacking = false;
-		if(attackStep >= comboList.Length){
-		  	resetCombo();
-		}
-		
-		int poseIndex = int.Parse(comboList[attackStep]);
-		if(poseIndex < PoseAttackNames.Length){// checking poseIndex is must in the PoseAttackNames list.
-            if (this.gameObject.GetComponent<CharacterAttack>()){
-                // Play Attack Animation 
-                this.gameObject.GetComponent<Animation>().Play(PoseAttackNames[poseIndex], PlayMode.StopAll);
-			}
-    		diddamaged = false;
+            status = STATUS.NORMAL;
 		}
 	}
 	
 	public void Attack()
 	{
 		if(frozetime <= 0){
-			attackStackTimeTemp = Time.time;
-		    fightAnimation();
-			attackStack += 1;
+            attack.attackStackTimeTemp = Time.time;
+            attack.fightAnimation();
+            attack.attackStack += 1;
 		}
 	}
     
 	public void Move(Vector3 dir){
-		if(!attacking){
-			moveDirection = dir;
-		}else{
-			moveDirection = dir/2f;
-		}
+        if (status != STATUS.NOTMOVE)
+        {
+            if (status != STATUS.ATTACKING)
+                moveDirection = dir;
+            else
+                moveDirection = dir / 2f;
+        }
 	}
 	
 	Vector3 direction;

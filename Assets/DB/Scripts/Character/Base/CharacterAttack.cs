@@ -9,6 +9,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
+// 完成动作等待和
 // StartDamage()            清空命中列表，设置Activated
 // AddObjHitted()           添加命中对象
 // AddFloatingText()        显示伤害值
@@ -16,7 +17,89 @@ using System.Collections.Generic;
 
 public class CharacterAttack : MonoBehaviour
 {
-	public float Direction = 0.5f;// Direction of object can hit
+    //********** attack animation **********//
+    public float[] PoseAttackTime; // list of time damage marking using to sync with attack animation
+    public string[] PoseAttackNames; // list of attack animation
+    public string[] ComboAttackLists; // list of combo set
+    public float SpeedAttack = 1.5f; // Attack speed
+    
+    public int WeaponType; // type of attacking
+    private int attackStep = 0;
+    private string[] comboList;
+    public int attackStack;//?
+    public float attackStackTimeTemp;//?
+
+    CharacterSystem system;
+
+    void Start()
+    {
+        system = gameObject.GetComponent<CharacterSystem>();
+    }
+
+    private void resetCombo()
+    {
+        attackStep = 0;
+        attackStack = 0;
+    }
+
+    public void fightAnimation()
+    {
+        system.status = CharacterSystem.STATUS.NORMAL;
+        if (attackStep >= comboList.Length)
+        {
+            resetCombo();
+        }
+
+        int poseIndex = int.Parse(comboList[attackStep]);
+        if (poseIndex < PoseAttackNames.Length)
+        {// checking poseIndex is must in the PoseAttackNames list.
+            if (this.gameObject.GetComponent<CharacterAttack>())
+            {
+                // Play Attack Animation
+                giveSystemMessage();
+                this.gameObject.GetComponent<Animation>().Play(PoseAttackNames[poseIndex], PlayMode.StopAll);
+                system.status = CharacterSystem.STATUS.ATTACKPREPARE;
+            }
+        }
+    }
+
+    void doWhenStop()
+    {
+        attackStep += 1;
+        attackStack -= 1;
+
+        // checking if a calling attacking is stacked
+        if (attackStack >= 1)
+        {
+            fightAnimation();//攻击连击
+        }
+
+        // reset character damage system
+        this.gameObject.GetComponent<CharacterAttack>().StartDamage();
+    }
+
+    void giveSystemMessage()
+    {
+        int poseIndex = int.Parse(comboList[attackStep]);
+        system.PoseSpeed = SpeedAttack;
+        system.PoseTime = PoseAttackTime[poseIndex];
+        system.PoseName = PoseAttackNames[poseIndex];
+        system.doSomething = DoDamage;
+        system.doWhenStop = doWhenStop;
+    }
+
+    void Update()
+    {
+        comboList = ComboAttackLists[WeaponType].Split(","[0]);
+
+        if (Time.time > attackStackTimeTemp + 3 && attackStack < 1)
+        {
+            resetCombo();
+        }
+    }
+
+    //********** doDamage **********//
+    public float Direction = 0.5f;// Direction of object can hit
 	public float Radius	= 1;
 	public int Force = 500;
 	public AudioClip[] SoundHit;
@@ -32,11 +115,6 @@ public class CharacterAttack : MonoBehaviour
 	
 	private void AddObjHitted(GameObject obj){
 		listObjHitted.Add(obj);
-	}
-	
-	void Update()
-	{
-
 	}
 
 	public void AddFloatingText(Vector3 pos,string text){

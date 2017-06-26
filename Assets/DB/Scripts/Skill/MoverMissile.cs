@@ -76,7 +76,7 @@ public class MoverMissile : MonoBehaviour
                 Vector3 dir = (target.transform.position - transform.position).normalized;
                 float direction = Vector3.Dot(dir, transform.forward);
                 if (direction < targetlockdirection)
-                {`
+                {
                     target = null;
                 }
             }
