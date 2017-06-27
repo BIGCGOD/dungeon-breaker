@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ActionData>
+  <Action name="Attack1" index="0" icon="" prefab="" animationName="Attack1" speed="1" prepareTime="0.5" finishTime="0.8" isCurrent="false" reducedMoveSpeed="0.9,0.5,1"></Action>
+  <Action name="Attack2" index="1" icon="" prefab="" animationName="Attack2" speed="1" prepareTime="0.6" finishTime="0.9" isCurrent="false" reducedMoveSpeed="0.9,0.5,1"></Action>
+</ActionData>
