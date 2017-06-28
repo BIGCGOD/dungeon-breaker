@@ -25,9 +25,8 @@ public class CharacterSystem : MonoBehaviour
     public float MoveSpeed = 0.2f; // Move speed
 	public float TurnSpeed = 5; // turning speed
 
-    public float speed;
-    public float prepareTime;
-    public string animationName;
+    public int actionIndex;
+    public float attackSpeed;
     public Action doSomething;
     public Action doWhenStop;
 
@@ -38,11 +37,13 @@ public class CharacterSystem : MonoBehaviour
 
     //private variable
     public float frozetime;
-    public enum STATUS { NORMAL, ATTACKPREPARE, ATTACKING, SKILLPREPARE, SKILLING, NOTMOVE, HITED };
+    public enum STATUS { NORMAL, PREPARE, ATTACK, FINISH, HITED };
     public STATUS status;
+    public bool notMove;
 
     CharacterMotor motor;
     CharacterAttack attack;
+    ActionManager actionManager;
 
     void Start()
 	{
@@ -50,42 +51,47 @@ public class CharacterSystem : MonoBehaviour
         attack = gameObject.GetComponent<CharacterAttack>();
         // Play pose Idle first
         gameObject.GetComponent<Animation>().CrossFade(PoseIdle);
-        
+        actionManager = (ActionManager)FindObjectOfType(typeof(ActionManager));
+
         status = STATUS.NORMAL;
+        notMove = false;
     }
 
     void Update()
     {
         // Animation combo system
-        if (status == STATUS.ATTACKPREPARE || status == STATUS.ATTACKING ||
-            status == STATUS.SKILLPREPARE || status == STATUS.SKILLING)
+        if (status == STATUS.PREPARE || status == STATUS.ATTACK ||
+            status == STATUS.FINISH)
         {
             // checking index of PoseAttackNames list
 
-            AnimationState attackState = this.gameObject.GetComponent<Animation>()[animationName]; // get animation PoseAttackNames[poseIndex]
+            AnimationState attackState = this.gameObject.GetComponent<Animation>()[
+                ((BaseAction)actionManager.actionHash[actionIndex]).animationName]; // get animation PoseAttackNames[poseIndex]
             attackState.layer = 2;
             attackState.blendMode = AnimationBlendMode.Blend;
-            attackState.speed = speed;
+            attackState.speed = attackSpeed;
 
-            // set attacking to True when time of attack animation is running to 10% of animation
-            if (attackState.time >= attackState.length * 0.1f)
+            if (attackState.time >= attackState.length * 0.9)
             {
-                status = status == STATUS.ATTACKPREPARE ? STATUS.ATTACKING : STATUS.SKILLING;
+                status = STATUS.NORMAL;
+            }
+            // if the time of attack animation is running to 80% of animation. It's should be Finish this pose.
+            else if (attackState.time >= ((BaseAction)actionManager.actionHash[actionIndex]).finishTime)
+            {
+                //attackState.normalizedTime = attackState.length;
+                status = STATUS.FINISH;
+                doWhenStop();
+                doWhenStop = () => { };
             }
             // if the time of attack animation is running to marking point (PoseAttackTime[poseIndex]) 
             // calling CharacterAttack.cs to push a damage out
-            if (attackState.time >= prepareTime)
+            else if (attackState.time >= ((BaseAction)actionManager.actionHash[actionIndex]).prepareTime)
             {
+                status = STATUS.ATTACK;
                 doSomething();
             }
-            // if the time of attack animation is running to 80% of animation. It's should be Finish this pose.
-            if (attackState.time >= attackState.length * 0.8f)
-            {
-                attackState.normalizedTime = attackState.length;
-                status = STATUS.NORMAL;
-                doWhenStop();
-            }
         }
+
         // Freeze when got hit
         if (status == STATUS.HITED){
 			if(frozetime > 0){
@@ -118,12 +124,18 @@ public class CharacterSystem : MonoBehaviour
 	}
     
 	public void Move(Vector3 dir){
-        if (status != STATUS.NOTMOVE)
+        if (!notMove )
         {
-            if (status != STATUS.ATTACKING)
-                moveDirection = dir;
+            if (status == STATUS.PREPARE)
+                moveDirection = dir * ((BaseAction)actionManager.actionHash[actionIndex]).reducedMoveSpeed[0];
+            else if (status == STATUS.ATTACK)
+                moveDirection = dir * ((BaseAction)actionManager.actionHash[actionIndex]).reducedMoveSpeed[1];
+            else if (status == STATUS.FINISH)
+                moveDirection = dir * ((BaseAction)actionManager.actionHash[actionIndex]).reducedMoveSpeed[2];
+            else if (status == STATUS.HITED)
+                moveDirection = dir * 0.2f;
             else
-                moveDirection = dir / 2f;
+                moveDirection = dir;
         }
 	}
 	

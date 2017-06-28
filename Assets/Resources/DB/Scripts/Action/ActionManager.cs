@@ -6,7 +6,7 @@ using System.Text;
 using System.Xml;
 using System.Collections;
 
-class ActionManager : MonoBehaviour
+public class ActionManager : MonoBehaviour
 {
     const string iconPath = "DB/Textures/UI/";
     const string prefabPath = "DB/Prefabs/";
@@ -29,23 +29,18 @@ class ActionManager : MonoBehaviour
             str = ((XmlElement)node).GetAttribute("name");
             if (str != "")
                 action.name = str;
-
             str = ((XmlElement)node).GetAttribute("icon");
             if (str != "")
                 action.icon = Resources.Load(iconPath + str, typeof(Texture2D)) as Texture2D;
-
             str = ((XmlElement)node).GetAttribute("prefab");
             if (str != "")
                 action.prefab = Resources.Load(prefabPath + str, typeof(GameObject)) as GameObject;
-
             str = ((XmlElement)node).GetAttribute("animationName");
             if (str != "")
                 action.animationName = str;
-
             str = ((XmlElement)node).GetAttribute("speed");
             if (str != "")
                 action.speed = float.Parse(str);
-
             str = ((XmlElement)node).GetAttribute("prepareTime");
             if (str != "")
                 action.prepareTime = float.Parse(str);
@@ -55,7 +50,6 @@ class ActionManager : MonoBehaviour
             str = ((XmlElement)node).GetAttribute("isCurrent");
             if (str != "")
                 action.isCurrent = bool.Parse(str);
-
             str = ((XmlElement)node).GetAttribute("reducedMoveSpeed");
             if (str != "")
             {
@@ -64,6 +58,9 @@ class ActionManager : MonoBehaviour
                 action.reducedMoveSpeed[1] = float.Parse(reducedMoveSpeed[1]);
                 action.reducedMoveSpeed[2] = float.Parse(reducedMoveSpeed[2]);
             }
+            str = ((XmlElement)node).GetAttribute("manaCost");
+            if (str != "")
+                action.manaCost = int.Parse(str);
 
             int index = int.Parse(((XmlElement)node).GetAttribute("index"));
             actionHash.Add(index, action);

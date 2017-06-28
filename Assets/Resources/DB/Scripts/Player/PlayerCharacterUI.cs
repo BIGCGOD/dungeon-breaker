@@ -79,14 +79,14 @@ public class PlayerCharacterUI : MonoBehaviour {
                 GUI.Label(new Rect(Screen.width - 330, 30, 300, 30), "Press 'E' Open Inventory");
 			}
 		}
-		
-		
-		if(skill)
-		{
-			for(int i=0;i<skill.Skill.Length;i++)
-			{
-                DrawSkill(i, new Vector2((Screen.width - (skill.Skill.Length * 60) - 30) + i * 60, Screen.height - 100));
-			}	
+
+
+        if (skill)
+        {
+            for (int i = 0; i < skill.skillIndexList.Length; i++)
+            {
+                DrawSkill(i, new Vector2((Screen.width - (skill.skillIndexList.Length * 60) - 30) + i * 60, Screen.height - 100));
+            }
 		}
 	}
 	
@@ -100,9 +100,10 @@ public class PlayerCharacterUI : MonoBehaviour {
             GUI.Label(new Rect(10 + position.x, position.y - 10, 55, 50), "Selected");
 		}
 
-		if(GUI.Button(new Rect(10 + position.x,10 + position.y,50,50),skill.SkillIcon[index])){
+        if (GUI.Button(new Rect(10 + position.x, 10 + position.y, 50, 50), (skill.actionManager.actionHash[skill.skillIndexList[index]] as BaseAction).icon))
+        {
             skill.indexSkill = index;
-		}
+        }
 		
 	}
 	

@@ -10,7 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 // 完成动作等待和
-// StartDamage()            清空命中列表，设置Activated
+// StartDamage()            清空命中列表
 // AddObjHitted()           添加命中对象
 // AddFloatingText()        显示伤害值
 // DoDamage()               伤害判定，计算伤害方向，显示伤害效果
@@ -27,8 +27,9 @@ public class CharacterAttack : MonoBehaviour
     public int attackStack;//?
     public float attackStackTimeTemp;//?
 
-    CharacterSystem system;
-    ActionManager actionManager;
+    private CharacterSystem system;
+    private ActionManager actionManager;
+
     void Start()
     {
         ComboAttackLists = new string[1];
@@ -37,7 +38,7 @@ public class CharacterAttack : MonoBehaviour
         actionManager = (ActionManager)FindObjectOfType(typeof(ActionManager));
     }
 
-    private void resetCombo()
+    public void resetCombo()
     {
         attackStep = 0;
         attackStack = 0;
@@ -59,7 +60,7 @@ public class CharacterAttack : MonoBehaviour
                 // Play Attack Animation
                 giveSystemMessage();
                 this.gameObject.GetComponent<Animation>().Play(((BaseAction)actionManager.actionHash[poseIndex]).animationName, PlayMode.StopAll);
-                system.status = CharacterSystem.STATUS.ATTACKPREPARE;
+                system.status = CharacterSystem.STATUS.PREPARE;
             }
         }
     }
@@ -69,6 +70,9 @@ public class CharacterAttack : MonoBehaviour
         attackStep += 1;
         attackStack -= 1;
 
+        if (attackStep >= comboList.Length)
+            resetCombo();
+
         // checking if a calling attacking is stacked
         if (attackStack >= 1)
         {
@@ -76,15 +80,14 @@ public class CharacterAttack : MonoBehaviour
         }
 
         // reset character damage system
-        this.gameObject.GetComponent<CharacterAttack>().StartDamage();
+        StartDamage();
     }
 
     void giveSystemMessage()
     {
         int poseIndex = int.Parse(comboList[attackStep]);
-        system.speed = SpeedAttack * ((BaseAction)actionManager.actionHash[poseIndex]).speed;
-        system.prepareTime = ((BaseAction)actionManager.actionHash[poseIndex]).prepareTime;
-        system.animationName = ((BaseAction)actionManager.actionHash[poseIndex]).animationName;
+        system.attackSpeed = ((BaseAction)actionManager.actionHash[poseIndex]).speed * SpeedAttack;
+        system.actionIndex = poseIndex;
         system.doSomething = DoDamage;
         system.doWhenStop = doWhenStop;
     }
@@ -104,14 +107,12 @@ public class CharacterAttack : MonoBehaviour
 	public float Radius	= 1;
 	public int Force = 500;
 	public AudioClip[] SoundHit;
-	public bool Activated;
 	public GameObject FloatingText;
 
 	HashSet<GameObject> listObjHitted = new HashSet<GameObject>();// list of hited objects
 	public void StartDamage()
 	{
 		listObjHitted.Clear();// Clear list of hited objects
-		Activated = false;
 	}
 	
 	private void AddObjHitted(GameObject obj){
@@ -131,7 +132,6 @@ public class CharacterAttack : MonoBehaviour
 	
 	public void DoDamage()
 	{
-		Activated = true;
 	    var explosionPos = transform.position;
 	    var colliders = Physics.OverlapSphere(explosionPos, Radius);
 		foreach(var hit in colliders)

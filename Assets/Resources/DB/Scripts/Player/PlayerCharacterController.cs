@@ -50,7 +50,7 @@ public class PlayerCharacterController : MonoBehaviour
 
             if (Input.GetMouseButtonDown(1))
             {
-                character.Attack();
+                //character.Attack();
                 var skillDeployer = this.gameObject.GetComponent<CharacterSkillDeployer>();
                 if (skillDeployer != null)
                     skillDeployer.DeployWithAttacking();

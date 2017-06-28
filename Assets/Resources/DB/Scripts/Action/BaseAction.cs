@@ -13,6 +13,7 @@ public class BaseAction
     public float finishTime;
     public bool isCurrent;
     public float[] reducedMoveSpeed;
+    public int manaCost;
 
     public Action doSomething;
     public Action doWhenStop;
