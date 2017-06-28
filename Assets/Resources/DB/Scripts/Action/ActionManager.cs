@@ -56,7 +56,6 @@ public class ActionManager : MonoBehaviour
                 string[] reducedMoveSpeed = str.Split(',');
                 action.reducedMoveSpeed[0] = float.Parse(reducedMoveSpeed[0]);
                 action.reducedMoveSpeed[1] = float.Parse(reducedMoveSpeed[1]);
-                action.reducedMoveSpeed[2] = float.Parse(reducedMoveSpeed[2]);
             }
             str = ((XmlElement)node).GetAttribute("manaCost");
             if (str != "")

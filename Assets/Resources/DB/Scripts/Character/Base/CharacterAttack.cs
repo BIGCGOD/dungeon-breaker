@@ -20,9 +20,9 @@ public class CharacterAttack : MonoBehaviour
     //********** attack animation **********//
     public string[] ComboAttackLists; // list of combo set
     public float SpeedAttack = 1.5f; // Attack speed
-    
+
     public int WeaponType; // type of attacking
-    private int attackStep = 0;
+    public int attackStep = 0;
     private string[] comboList;
     public int attackStack;//?
     public float attackStackTimeTemp;//?
@@ -36,6 +36,9 @@ public class CharacterAttack : MonoBehaviour
         ComboAttackLists[0] = "0,1";
         system = gameObject.GetComponent<CharacterSystem>();
         actionManager = (ActionManager)FindObjectOfType(typeof(ActionManager));
+
+        resetCombo();
+        comboList = ComboAttackLists[WeaponType].Split(',');
     }
 
     public void resetCombo()
@@ -46,22 +49,13 @@ public class CharacterAttack : MonoBehaviour
 
     public void fightAnimation()
     {
-        system.status = CharacterSystem.STATUS.NORMAL;
-        if (attackStep >= comboList.Length)
-        {
-            resetCombo();
-        }
-
         int poseIndex = int.Parse(comboList[attackStep]);
         if (actionManager.actionHash.Contains(poseIndex))
         {// checking poseIndex is must in the PoseAttackNames list.
-            if (this.gameObject.GetComponent<CharacterAttack>())
-            {
-                // Play Attack Animation
-                giveSystemMessage();
-                this.gameObject.GetComponent<Animation>().Play(((BaseAction)actionManager.actionHash[poseIndex]).animationName, PlayMode.StopAll);
-                system.status = CharacterSystem.STATUS.PREPARE;
-            }
+         // Play Attack Animation
+            giveSystemMessage();
+            gameObject.GetComponent<Animation>().Play(((BaseAction)actionManager.actionHash[poseIndex]).animationName, PlayMode.StopAll);
+            system.status = CharacterSystem.STATUS.PREPARE;
         }
     }
 
@@ -72,12 +66,8 @@ public class CharacterAttack : MonoBehaviour
 
         if (attackStep >= comboList.Length)
             resetCombo();
-
-        // checking if a calling attacking is stacked
-        if (attackStack >= 1)
-        {
-            fightAnimation();//¹¥»÷Á¬»÷
-        }
+        else if (attackStack >= 1)// checking if a calling attacking is stacked
+            fightAnimation();// ¹¥»÷Á¬»÷
 
         // reset character damage system
         StartDamage();
@@ -94,8 +84,6 @@ public class CharacterAttack : MonoBehaviour
 
     void Update()
     {
-        comboList = ComboAttackLists[WeaponType].Split(',');
-
         if (Time.time > attackStackTimeTemp + 3 && attackStack < 1)
         {
             resetCombo();

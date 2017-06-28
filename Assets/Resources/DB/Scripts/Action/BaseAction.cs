@@ -20,6 +20,6 @@ public class BaseAction
 
     public BaseAction()
     {
-        reducedMoveSpeed = new float[3];
+        reducedMoveSpeed = new float[2];
     }
 }

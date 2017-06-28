@@ -23,6 +23,5 @@ public class Floating3D : MonoBehaviour {
 		positionTemp += PositionDirection * Time.deltaTime;
 		PositionDirection += PositionMult * Time.deltaTime;
 		this.transform.position = Vector3.Lerp(this.transform.position,positionTemp,0.5f);
-
 	}
 }

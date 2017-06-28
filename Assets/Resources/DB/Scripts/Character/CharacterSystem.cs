@@ -37,7 +37,7 @@ public class CharacterSystem : MonoBehaviour
 
     //private variable
     public float frozetime;
-    public enum STATUS { NORMAL, PREPARE, ATTACK, FINISH, HITED };
+    public enum STATUS { NORMAL, PREPARE, ATTACK, HITED };
     public STATUS status;
     public bool notMove;
 
@@ -60,30 +60,24 @@ public class CharacterSystem : MonoBehaviour
     void Update()
     {
         // Animation combo system
-        if (status == STATUS.PREPARE || status == STATUS.ATTACK ||
-            status == STATUS.FINISH)
+        if (status == STATUS.PREPARE || status == STATUS.ATTACK)
         {
             // checking index of PoseAttackNames list
-
-            AnimationState attackState = this.gameObject.GetComponent<Animation>()[
+            AnimationState attackState = gameObject.GetComponent<Animation>()[
                 ((BaseAction)actionManager.actionHash[actionIndex]).animationName]; // get animation PoseAttackNames[poseIndex]
             attackState.layer = 2;
             attackState.blendMode = AnimationBlendMode.Blend;
             attackState.speed = attackSpeed;
 
-            if (attackState.time >= attackState.length * 0.9)
-            {
-                status = STATUS.NORMAL;
-            }
             // if the time of attack animation is running to 80% of animation. It's should be Finish this pose.
-            else if (attackState.time >= ((BaseAction)actionManager.actionHash[actionIndex]).finishTime)
+            if (attackState.time >= ((BaseAction)actionManager.actionHash[actionIndex]).finishTime ||
+                attackState.time >= attackState.length)
             {
-                //attackState.normalizedTime = attackState.length;
-                status = STATUS.FINISH;
+                attackState.normalizedTime = attackState.length;
+                status = STATUS.NORMAL;
                 doWhenStop();
-                doWhenStop = () => { };
             }
-            // if the time of attack animation is running to marking point (PoseAttackTime[poseIndex]) 
+            // if the time of attack animation is running to marking point (PoseAttackTime[poseIndex])
             // calling CharacterAttack.cs to push a damage out
             else if (attackState.time >= ((BaseAction)actionManager.actionHash[actionIndex]).prepareTime)
             {
@@ -116,7 +110,7 @@ public class CharacterSystem : MonoBehaviour
 	
 	public void Attack()
 	{
-		if(frozetime <= 0){
+		if (frozetime <= 0){
             attack.attackStackTimeTemp = Time.time;
             attack.fightAnimation();
             attack.attackStack += 1;
@@ -130,8 +124,6 @@ public class CharacterSystem : MonoBehaviour
                 moveDirection = dir * ((BaseAction)actionManager.actionHash[actionIndex]).reducedMoveSpeed[0];
             else if (status == STATUS.ATTACK)
                 moveDirection = dir * ((BaseAction)actionManager.actionHash[actionIndex]).reducedMoveSpeed[1];
-            else if (status == STATUS.FINISH)
-                moveDirection = dir * ((BaseAction)actionManager.actionHash[actionIndex]).reducedMoveSpeed[2];
             else if (status == STATUS.HITED)
                 moveDirection = dir * 0.2f;
             else
